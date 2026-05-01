@@ -8,6 +8,7 @@ body {
     background-color: #ffe4e8;
     font-family: "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
     min-height: 100vh;
+    min-height: 100dvh;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -143,6 +144,13 @@ h1 {
     background: linear-gradient(135deg, #c0392b, #a93226);
 }
 
+#yes-btn:focus-visible,
+#no-btn:focus-visible,
+#music-toggle:focus-visible {
+    outline: 4px solid rgba(214, 51, 132, 0.45);
+    outline-offset: 4px;
+}
+
 
 #tease-toast {
     margin-top: 14px;
@@ -236,5 +244,16 @@ h1 {
     #music-toggle {
         bottom: 14px;
         right: 14px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        scroll-behavior: auto !important;
+        transition-duration: 0.01ms !important;
     }
 }

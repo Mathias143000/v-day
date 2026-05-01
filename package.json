@@ -1,0 +1,16 @@
+{
+  "name": "v-day-main",
+  "version": "1.0.0",
+  "description": "Милая страница ко Дню святого Валентина: кнопка «Да» растёт после каждого нажатия на «Нет», GIF меняются по настроению, играет музыка, а в финале запускается конфетти.",
+  "main": "script.js",
+  "scripts": {
+    "build": "tsc",
+    "typecheck": "tsc --noEmit"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "typescript": "^6.0.3"
+  }
+}
