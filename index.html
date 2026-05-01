@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#ffe4ec">
+    <meta name="description" content="Нежная интерактивная валентинка с милыми GIF, музыкой и праздничным финалом.">
+    <title>Будешь моей валентинкой? 💕</title>
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ctext y='50' font-size='52'%3E%F0%9F%92%95%3C/text%3E%3C/svg%3E">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="hearts-bg"></div>
+
+    <div class="container">
+        <h1>Будешь моей валентинкой? 💕</h1>
+
+        <div class="gif-container">
+            <img id="cat-gif" src="https://media.tenor.com/EBV7OT7ACfwAAAAj/u-u-qua-qua-u-quaa.gif" alt="Милый персонаж ждёт ответа">
+        </div>
+
+        <div class="buttons">
+            <button id="yes-btn" type="button" onclick="handleYesClick()">Да</button>
+            <button id="no-btn" type="button" onclick="handleNoClick()">Нет</button>
+        </div>
+        <div id="tease-toast" aria-live="polite"></div>
+    </div>
+
+    <audio id="bg-music" loop autoplay muted>
+        <source src="music/beabadoobee - Glue Song (Lyrics).mp3" type="audio/mpeg">
+    </audio>
+
+    <button id="music-toggle" type="button" onclick="toggleMusic()" title="Включить или выключить музыку" aria-label="Выключить музыку">🔊</button>
+
+    <script src="script.js"></script>
+</body>
+</html>
