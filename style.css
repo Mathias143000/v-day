@@ -135,9 +135,10 @@ h1 {
     font-family: inherit;
     padding: 12px 28px;
     cursor: pointer;
-    transition: background 0.2s, left 0.25s ease, top 0.25s ease;
+    transition: background 0.2s;
     box-shadow: 0 4px 14px rgba(231, 76, 60, 0.4);
     overflow-wrap: anywhere;
+    will-change: transform;
 }
 
 #no-btn:hover {
