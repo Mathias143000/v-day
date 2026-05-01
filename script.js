@@ -31,6 +31,7 @@ let noClickCount = 0;
 let runawayEnabled = false;
 let musicPlaying = true;
 let teaseTimer;
+let lastRunawayAt = 0;
 const catGif = getElement("cat-gif");
 const yesBtn = getElement("yes-btn");
 const noBtn = getElement("no-btn");
@@ -118,16 +119,37 @@ function swapGif(src) {
 }
 function enableRunaway() {
     noBtn.addEventListener("mouseover", runAway);
+    noBtn.addEventListener("pointermove", runAwayFromPointer);
+    document.addEventListener("pointermove", runAwayFromPointer);
     noBtn.addEventListener("touchstart", runAway, { passive: true });
+    noBtn.addEventListener("click", blockRunawayClick, true);
 }
-function runAway() {
+function blockRunawayClick(event) {
+    event.preventDefault();
+    event.stopImmediatePropagation();
+    runAway(event);
+}
+function runAwayFromPointer(event) {
+    const rect = noBtn.getBoundingClientRect();
+    const centerX = rect.left + rect.width / 2;
+    const centerY = rect.top + rect.height / 2;
+    const distance = Math.hypot(event.clientX - centerX, event.clientY - centerY);
+    const dangerRadius = Math.max(180, Math.min(300, rect.width * 1.9));
+    if (distance < dangerRadius) {
+        runAway(event);
+    }
+}
+function runAway(event) {
+    const now = performance.now();
+    if (now - lastRunawayAt < 80) {
+        return;
+    }
+    lastRunawayAt = now;
     const margin = 20;
     const btnW = noBtn.offsetWidth;
     const btnH = noBtn.offsetHeight;
     const maxX = Math.max(window.innerWidth - btnW - margin, margin);
     const maxY = Math.max(window.innerHeight - btnH - margin, margin);
-    const randomX = Math.random() * maxX + margin / 2;
-    const randomY = Math.random() * maxY + margin / 2;
     if (noBtn.style.position !== "fixed") {
         const currentRect = noBtn.getBoundingClientRect();
         noBtn.style.position = "fixed";
@@ -136,8 +158,43 @@ function runAway() {
         noBtn.style.zIndex = "50";
         noBtn.getBoundingClientRect();
     }
-    noBtn.style.left = `${Math.min(randomX, maxX)}px`;
-    noBtn.style.top = `${Math.min(randomY, maxY)}px`;
+    const target = pickRunawayTarget(getPointerPosition(event), maxX, maxY, margin);
+    noBtn.style.left = `${target.x}px`;
+    noBtn.style.top = `${target.y}px`;
+}
+function getPointerPosition(event) {
+    if (!event) {
+        return undefined;
+    }
+    if ("touches" in event && event.touches.length > 0) {
+        return {
+            x: event.touches[0].clientX,
+            y: event.touches[0].clientY
+        };
+    }
+    if ("clientX" in event) {
+        return {
+            x: event.clientX,
+            y: event.clientY
+        };
+    }
+    return undefined;
+}
+function pickRunawayTarget(pointer, maxX, maxY, margin) {
+    const minX = margin / 2;
+    const minY = margin / 2;
+    const candidates = Array.from({ length: 16 }, () => ({
+        x: Math.min(Math.random() * maxX + minX, maxX),
+        y: Math.min(Math.random() * maxY + minY, maxY)
+    }));
+    if (!pointer) {
+        return candidates[0];
+    }
+    return candidates.reduce((best, candidate) => {
+        const bestDistance = Math.hypot(best.x - pointer.x, best.y - pointer.y);
+        const candidateDistance = Math.hypot(candidate.x - pointer.x, candidate.y - pointer.y);
+        return candidateDistance > bestDistance ? candidate : best;
+    });
 }
 window.toggleMusic = toggleMusic;
 window.handleYesClick = handleYesClick;
