@@ -33,11 +33,6 @@ let noClickCount = 0
 let runawayEnabled = false
 let musicPlaying = true
 let teaseTimer: number | undefined
-let runawayAnimationFrame: number | undefined
-let runawayStarted = false
-let runawayX = 0
-let runawayY = 0
-let lastRunawayAt = 0
 
 const catGif = getElement<HTMLImageElement>("cat-gif")
 const yesBtn = getElement<HTMLButtonElement>("yes-btn")
@@ -131,9 +126,10 @@ function handleNoClick(): void {
     const gifIndex = Math.min(noClickCount, gifStages.length - 1)
     swapGif(gifStages[gifIndex])
 
-    if (noClickCount >= 5 && !runawayEnabled) {
+    if (msgIndex === noMessages.length - 1 && !runawayEnabled) {
         enableRunaway()
         runawayEnabled = true
+        runAway()
     }
 }
 
@@ -148,149 +144,29 @@ function swapGif(src: string): void {
 
 function enableRunaway(): void {
     noBtn.addEventListener("mouseover", runAway)
-    noBtn.addEventListener("pointerenter", runAway)
     noBtn.addEventListener("touchstart", runAway, { passive: true })
-    document.addEventListener("pointermove", runAwayFromPointer)
 }
 
-function runAwayFromPointer(event: PointerEvent): void {
-    if (!runawayEnabled) {
-        return
-    }
-
-    const rect = noBtn.getBoundingClientRect()
-    const centerX = rect.left + rect.width / 2
-    const centerY = rect.top + rect.height / 2
-    const distance = Math.hypot(event.clientX - centerX, event.clientY - centerY)
-    const dangerRadius = Math.max(130, Math.min(220, rect.width * 1.35))
-
-    if (distance < dangerRadius) {
-        runAway(event)
-    }
-}
-
-function runAway(event?: MouseEvent | PointerEvent | TouchEvent): void {
-    const now = performance.now()
-
-    if (now - lastRunawayAt < 90) {
-        return
-    }
-
-    lastRunawayAt = now
-
+function runAway(): void {
     const margin = 20
     const btnW = noBtn.offsetWidth
     const btnH = noBtn.offsetHeight
     const maxX = Math.max(window.innerWidth - btnW - margin, margin)
     const maxY = Math.max(window.innerHeight - btnH - margin, margin)
+    const randomX = Math.random() * maxX + margin / 2
+    const randomY = Math.random() * maxY + margin / 2
 
-    if (!runawayStarted) {
-        const rect = noBtn.getBoundingClientRect()
-        runawayX = rect.left
-        runawayY = rect.top
+    if (noBtn.style.position !== "fixed") {
+        const currentRect = noBtn.getBoundingClientRect()
         noBtn.style.position = "fixed"
-        noBtn.style.left = "0"
-        noBtn.style.top = "0"
+        noBtn.style.left = `${currentRect.left}px`
+        noBtn.style.top = `${currentRect.top}px`
         noBtn.style.zIndex = "50"
-        noBtn.style.transform = `translate3d(${runawayX}px, ${runawayY}px, 0)`
-        runawayStarted = true
+        noBtn.getBoundingClientRect()
     }
 
-    const pointer = getPointerPosition(event)
-    const target = pickRunawayTarget(pointer, maxX, maxY, margin)
-    const distance = Math.hypot(target.x - runawayX, target.y - runawayY)
-    const duration = Math.max(260, Math.min(520, distance * 1.25))
-
-    animateRunaway(target.x, target.y, duration)
-}
-
-function getPointerPosition(event?: MouseEvent | PointerEvent | TouchEvent): { x: number, y: number } | undefined {
-    if (!event) {
-        return undefined
-    }
-
-    if ("touches" in event && event.touches.length > 0) {
-        return {
-            x: event.touches[0].clientX,
-            y: event.touches[0].clientY
-        }
-    }
-
-    if ("clientX" in event) {
-        return {
-            x: event.clientX,
-            y: event.clientY
-        }
-    }
-
-    return undefined
-}
-
-function pickRunawayTarget(
-    pointer: { x: number, y: number } | undefined,
-    maxX: number,
-    maxY: number,
-    margin: number
-): { x: number, y: number } {
-    const minX = margin / 2
-    const minY = margin / 2
-    const candidates = Array.from({ length: 10 }, () => ({
-        x: Math.random() * maxX + minX,
-        y: Math.random() * maxY + minY
-    }))
-
-    if (!pointer) {
-        return candidates[0]
-    }
-
-    return candidates.reduce((best, candidate) => {
-        const bestDistance = Math.hypot(best.x - pointer.x, best.y - pointer.y)
-        const candidateDistance = Math.hypot(candidate.x - pointer.x, candidate.y - pointer.y)
-
-        return candidateDistance > bestDistance ? candidate : best
-    })
-}
-
-function animateRunaway(targetX: number, targetY: number, duration: number): void {
-    if (runawayAnimationFrame) {
-        window.cancelAnimationFrame(runawayAnimationFrame)
-    }
-
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-        moveRunawayButton(targetX, targetY)
-        return
-    }
-
-    const startX = runawayX
-    const startY = runawayY
-    const startedAt = performance.now()
-
-    const step = (timestamp: number): void => {
-        const progress = Math.min((timestamp - startedAt) / duration, 1)
-        const easedProgress = easeInOutCubic(progress)
-        const nextX = startX + (targetX - startX) * easedProgress
-        const nextY = startY + (targetY - startY) * easedProgress
-
-        moveRunawayButton(nextX, nextY)
-
-        if (progress < 1) {
-            runawayAnimationFrame = window.requestAnimationFrame(step)
-        }
-    }
-
-    runawayAnimationFrame = window.requestAnimationFrame(step)
-}
-
-function moveRunawayButton(x: number, y: number): void {
-    runawayX = x
-    runawayY = y
-    noBtn.style.transform = `translate3d(${x}px, ${y}px, 0)`
-}
-
-function easeInOutCubic(progress: number): number {
-    return progress < 0.5
-        ? 4 * progress * progress * progress
-        : 1 - Math.pow(-2 * progress + 2, 3) / 2
+    noBtn.style.left = `${Math.min(randomX, maxX)}px`
+    noBtn.style.top = `${Math.min(randomY, maxY)}px`
 }
 
 window.toggleMusic = toggleMusic
